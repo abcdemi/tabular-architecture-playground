@@ -1,9 +1,3 @@
-Of course. Here is the updated `README.md` file.
-
-The changes reflect that the data generator is complete and the first model, the `RowBasedTransformer`, has been implemented. The development plan is updated to show this progress and highlight the next steps.
-
----
-
 # Tabular Architecture Playground
 
 This repository is my personal exploration into building a general-purpose, pre-trained model for tabular data. The core idea is to train a single, powerful neural network on a vast amount of synthetically generated datasets, with the goal of creating a model that can solve new, unseen tabular problems "in-context" without the need for fine-tuning.
