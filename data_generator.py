@@ -3,6 +3,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.datasets import make_classification, make_moons, make_circles
+import math # <-- Required import for the fix
 
 class SyntheticDataGenerator:
     """
@@ -39,9 +40,30 @@ class SyntheticDataGenerator:
         """
         Generates data with hyper-elliptical clusters using scikit-learn's
         make_classification. This is the workhorse function.
+        (This is the UPDATED and FIXED version)
         """
-        # Randomize the number of informative, redundant, and repeated features
-        n_informative = np.random.randint(2, n_features + 1)
+        # First, decide on the number of clusters per class
+        n_clusters_per_class = np.random.randint(1, 4)
+        total_clusters = n_classes * n_clusters_per_class
+
+        # --- THE FIX IS HERE ---
+        # Calculate the minimum number of informative features required to separate all clusters.
+        # The number of separable regions with n features is 2**n. So we need 2**n_informative >= total_clusters.
+        # Taking log2 of both sides: n_informative >= log2(total_clusters).
+        min_informative = math.ceil(math.log2(total_clusters)) if total_clusters > 1 else 1
+        
+        # Ensure we don't ask for more informative features than available features.
+        # Also ensure we have at least 2 informative features for a meaningful problem.
+        max_informative = n_features
+        if min_informative >= max_informative:
+            # This can happen if n_features is very small. In this case, we have to
+            # reduce the number of informative features to what's available.
+            n_informative = max_informative
+        else:
+            # Choose a random number of informative features that is guaranteed to be valid.
+            n_informative = np.random.randint(min_informative, max_informative + 1)
+        # --- END OF FIX ---
+
         n_redundant = np.random.randint(0, n_features - n_informative + 1)
         
         X, y = make_classification(
@@ -50,10 +72,10 @@ class SyntheticDataGenerator:
             n_informative=n_informative,
             n_redundant=n_redundant,
             n_classes=n_classes,
-            n_clusters_per_class=np.random.randint(1, 4), # Creates more complex structures
-            class_sep=np.random.uniform(0.5, 2.0),       # Controls how easy the problem is
-            flip_y=np.random.uniform(0.01, 0.1),         # Adds label noise
-            random_state=None # Ensure variety in each call
+            n_clusters_per_class=n_clusters_per_class,
+            class_sep=np.random.uniform(0.5, 2.0),
+            flip_y=np.random.uniform(0.01, 0.1),
+            random_state=None
         )
         return X, y
 
