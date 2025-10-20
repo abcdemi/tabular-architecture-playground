@@ -154,7 +154,7 @@ def train():
     print("Training finished!")
     
     # You would typically save your model here
-    # torch.save(model.state_dict(), 'row_transformer_pretrained.pth')
+    torch.save(model.state_dict(), 'row_transformer_pretrained.pth')
 
 
 if __name__ == '__main__':
