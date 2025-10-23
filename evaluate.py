@@ -17,43 +17,35 @@ from architectures.row_transformer import RowBasedTransformer
 CONFIG = {
     "model_path": "row_transformer_pretrained.pth",
 
-    # Model Config (from training)
-    "num_features": 32,        # The model was trained to expect this many features
-    "num_classes": 5,          # The model was trained to output logits for this many classes
-    "embedding_dim": 128,      
+    # Model Config (MATCHED TO THE NEW, LARGER MODEL)
+    "num_features": 32,
+    "num_classes": 5,
+    "embedding_dim": 256,      # Updated
     "nhead": 8,
-    "num_encoder_layers": 4,
-    "dim_feedforward": 256,
+    "num_encoder_layers": 6,   # Updated
+    "dim_feedforward": 512,    # Updated
     "dropout": 0.1,
 
     # Evaluation Config
-    "test_size": 0.25,         # Proportion of the real dataset to use for the final accuracy test
+    "test_size": 0.25,
 }
 
 def load_pretrained_model():
     """Loads the pre-trained model from disk."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # Instantiate the model with the same architecture as during training
-    model = RowBasedTransformer(
-        num_features=CONFIG["num_features"],
-        num_classes=CONFIG["num_classes"],
-        embedding_dim=CONFIG["embedding_dim"],
-        nhead=CONFIG["nhead"],
-        num_encoder_layers=CONFIG["num_encoder_layers"],
-        dim_feedforward=CONFIG["dim_feedforward"]
-    ).to(device)
+    # ... (model instantiation is correct) ...
+    model = RowBasedTransformer(...)
     
     # Load the saved weights
     try:
-        model.load_state_dict(torch.load(CONFIG["model_path"], map_location=device))
+        # --- THE FIX FOR THE WARNING ---
+        model.load_state_dict(torch.load(CONFIG["model_path"], map_location=device, weights_only=True))
     except FileNotFoundError:
         print(f"ERROR: Model file not found at '{CONFIG['model_path']}'.")
         print("Please run train.py first to generate the model file.")
         exit()
         
-    # Set the model to evaluation mode. This is crucial!
-    # It disables dropout and other training-specific layers.
     model.eval()
     
     print(f"Model loaded successfully from {CONFIG['model_path']} and set to evaluation mode.")
