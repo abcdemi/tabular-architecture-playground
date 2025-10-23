@@ -34,12 +34,21 @@ def load_pretrained_model():
     """Loads the pre-trained model from disk."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # ... (model instantiation is correct) ...
-    model = RowBasedTransformer(...)
+    # --- THE FIX IS HERE ---
+    # Instantiate the model with the same architecture as during training.
+    # We must pass ALL the required arguments.
+    model = RowBasedTransformer(
+        num_features=CONFIG["num_features"],
+        num_classes=CONFIG["num_classes"], # This was the missing argument
+        embedding_dim=CONFIG["embedding_dim"],
+        nhead=CONFIG["nhead"],
+        num_encoder_layers=CONFIG["num_encoder_layers"],
+        dim_feedforward=CONFIG["dim_feedforward"]
+    ).to(device)
+    # --- END OF FIX ---
     
     # Load the saved weights
     try:
-        # --- THE FIX FOR THE WARNING ---
         model.load_state_dict(torch.load(CONFIG["model_path"], map_location=device, weights_only=True))
     except FileNotFoundError:
         print(f"ERROR: Model file not found at '{CONFIG['model_path']}'.")
