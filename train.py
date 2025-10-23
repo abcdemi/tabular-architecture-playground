@@ -14,27 +14,27 @@ from architectures.row_transformer import RowBasedTransformer
 # --- Configuration ---
 # We'll use a dictionary for configuration for simplicity.
 CONFIG = {
-    # Data Generation Config
-    "max_samples": 512,        # Max rows per dataset (controls sequence length)
-    "max_features": 32,        # Max features per dataset
-    "max_classes": 5,          # Max number of classes
-    "test_size": 0.25,         # Proportion of each dataset to use for the test set
+    # Data Generation Config (Restored)
+    "max_samples": 512,        
+    "max_features": 32,        
+    "max_classes": 5,          
+    "test_size": 0.25,         
 
-    # Model Config (must match the data config)
-    "num_features": 32,        # Must be == max_features
-    "num_classes": 5,          # Must be == max_classes
-    "embedding_dim": 128,      
+    # Model Config (Increased Capacity)
+    "num_features": 32,        
+    "num_classes": 5,          
+    "embedding_dim": 256,      # Doubled from 128
     "nhead": 8,
-    "num_encoder_layers": 4,
-    "dim_feedforward": 256,
+    "num_encoder_layers": 6,   # Increased from 4
+    "dim_feedforward": 512,    # Doubled from 256
     "dropout": 0.1,
 
-    # Training Config
+    # Training Config (Increased Duration)
     "learning_rate": 1e-4,
-    "batch_size": 16,          # Number of synthetic datasets per batch
-    "num_training_steps": 10000,
-    "log_interval": 100,       # How often to print the loss
-    "grad_clip_value": 1.0,    # Helps prevent exploding gradients
+    "batch_size": 16,          
+    "num_training_steps": 10000, # Increased from 10000
+    "log_interval": 100,       
+    "grad_clip_value": 1.0,    
 }
 
 def create_prompt_from_dataset(X, y, test_size):
