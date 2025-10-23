@@ -32,7 +32,7 @@ CONFIG = {
     # Training Config
     "learning_rate": 1e-4,
     "batch_size": 16,          # Number of synthetic datasets per batch
-    "num_training_steps": 5000,
+    "num_training_steps": 10000,
     "log_interval": 100,       # How often to print the loss
     "grad_clip_value": 1.0,    # Helps prevent exploding gradients
 }
