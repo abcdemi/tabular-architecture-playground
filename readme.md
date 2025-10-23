@@ -4,65 +4,60 @@ This repository is my personal exploration into building a general-purpose, pre-
 
 ## The Core Idea: In-Context Learning for Tables
 
-Traditional machine learning involves training a specific model for each specific task (e.g., a churn model, a credit risk model). This project explores a different paradigm:
+Traditional machine learning involves training a specific model for each specific task. This project explores a different paradigm:
 
 1.  **Phase 1: Pre-training.** A neural network architecture is trained on thousands of diverse, synthetically generated tabular classification problems. The model is not learning to solve any single problem, but rather learning a general-purpose *algorithm* for how to deduce patterns from tabular data.
 
-2.  **Phase 2: Inference.** The single, pre-trained model is presented with a new, unseen problem. The entire training set for this new problem is provided as a "prompt" or "context" to the model in a single forward pass. The model uses its learned algorithm to infer the underlying patterns from the prompt and make predictions on the test samples provided.
+2.  **Phase 2: Inference.** The single, pre-trained model is presented with a new, unseen problem. The entire training set for this new problem is provided as a "prompt." The model uses its learned algorithm to infer the underlying patterns from the prompt and make predictions on the test samples provided.
 
 The primary goal is to experiment with different neural network architectures to see which ones are most effective at learning this general "tabular reasoning" algorithm.
 
-## Project Structure
+## Project Status: First Baseline Established
 
-This project is organized into a few key components:
+I have successfully built and tested a complete, end-to-end pipeline:
+1.  A flexible synthetic data generator (`data_generator.py`).
+2.  A Transformer-based architecture that treats rows as tokens (`architectures/row_transformer.py`).
+3.  A pre-training script that trains the model on-the-fly (`train.py`).
+4.  An evaluation script that performs zero-shot testing on real-world datasets (`evaluate.py`).
 
--   `data_generator.py`: A script responsible for creating an infinite stream of diverse, synthetic tabular classification datasets. It uses `scikit-learn` to generate data with various underlying structures (linear, clustered, non-linear) and complexities.
+The initial pre-training run was completed using the `RowBasedTransformer` architecture for 5,000 steps. The model was then evaluated on two classic scikit-learn datasets.
 
--   `architectures/`: This directory contains the implementation of the different neural network models.
-    -   `row_transformer.py`: The first model implementation, a Transformer that treats each data row as a token.
+### Initial Evaluation Results
 
--   `train.py`: *(Upcoming)* The main script for pre-training a chosen architecture on the synthetic data.
+The first experiment has successfully established a baseline for the model's performance.
 
--   `evaluate.py`: *(Upcoming)* A script to benchmark the pre-trained models on a suite of real-world datasets to evaluate their generalization capabilities.
+| Dataset | Random Guessing Accuracy | **My Model's Zero-Shot Accuracy** | Analysis |
+| :--- | :--- | :--- | :--- |
+| **Breast Cancer** (2 classes) | 50.0% | **54.55%** | **Successful Signal:** The model performs better than random, proving the pre-training learned a valid, generalizable signal. |
+| **Wine** (3 classes) | 33.3% | **24.44%** | **Insightful Failure:** The model performed worse than random, suggesting the learned algorithm is not yet general enough and struggles with data distributions different from the synthetic training data. |
 
-## My Architectural Experiments
+**Conclusion:** The pipeline works and the model is learning! The current results indicate that the model is **under-trained and its learned algorithm is not yet general enough** to perform well on a wide variety of tasks. This is an excellent and expected starting point for iterative improvement.
 
-The central part of this project is to implement and compare different architectures. My plan is to start with a baseline and then explore more creative ideas.
+## My Development Plan & Next Steps
 
-### 1. The Baseline: Row-Based Transformer
+With a working baseline, the next phase of the project is focused on improving the model's generalization capabilities.
 
--   **Status:** Implemented in `architectures/row_transformer.py`.
--   **Concept:** This model treats each data point (a row) as a "token" in a sequence, similar to how words are treated in a sentence. A standard Transformer Encoder then processes the entire sequence of rows to learn the relationships between them.
--   **Implementation Details:**
-    1.  **Row Embedder:** A simple Multi-Layer Perceptron (MLP) that projects each input row vector into a higher-dimensional embedding space.
-    2.  **Positional Encoding:** Standard sinusoidal positional encodings are added to give the model a sense of the order and position of rows in the sequence.
-    3.  **Transformer Encoder Core:** The main workhorse is a stack of `torch.nn.TransformerEncoderLayer` modules, which perform the self-attention calculations.
-    4.  **Output Head:** A final Linear layer maps the processed row embeddings to the classification logits for each class.
-
-### 2. The Follow-up: Hybrid (CNN + Transformer)
-
--   **Status:** Planned.
--   **Concept:** Before feeding the sequence of row embeddings into the Transformer, first pass it through several layers of 1D Convolutional Neural Networks (CNNs).
--   **Hypothesis:** The CNN layers can act as "local pattern extractors," identifying meaningful features among small, local groups of data points. The Transformer can then use these richer, pre-processed features to model the more complex, global relationships across the entire dataset.
-
-## My Development Plan
-
--   [x] **Build a robust synthetic data generator.** The `data_generator.py` script is complete and functional.
--   [x] **Implement the Row-Based Transformer baseline.** The first architecture is coded in `architectures/row_transformer.py`.
--   [ ] **Develop the pre-training loop.** This is the immediate next step. This script will connect the data generator to the model and handle the in-context loss calculation and backpropagation.
--   [ ] **Establish an evaluation harness.** Create a standardized way to test the pre-trained model on a set of real-world tabular datasets.
--   [ ] **Iterate and experiment.** Once the baseline is established and evaluated, I will implement and test other architectures.
+-   [x] **Build a robust synthetic data generator.**
+-   [x] **Implement the Row-Based Transformer baseline.**
+-   [x] **Develop the pre-training loop.**
+-   [x] **Establish an evaluation harness and get baseline results.**
+-   [ ] **Iterate to Improve Performance.** My immediate next steps are:
+    1.  **Increase Training Duration:** The most straightforward next step is to train the model for significantly longer. I will increase the training steps from 5,000 to 20,000+ to allow the model to see more problems and learn a more robust algorithm.
+    2.  **Increase Model Capacity:** I will experiment with a larger model by increasing parameters like `embedding_dim` and `num_encoder_layers`. A larger model has more capacity to learn a more complex algorithm.
+    3.  **Diversify Synthetic Data:** I will enhance the `data_generator.py` to produce a wider variety of problem types, forcing the model to learn a more flexible and general approach to problem-solving.
 
 ## How to Use
 
-This project is currently in the development phase. You can run the individual components to see them in action.
+This project is currently in the experimentation and development phase.
 
-**1. See an example of a generated dataset:**
+**1. Replicate the Training:**
+Run the training script. This will take some time and will save the model weights to `row_transformer_pretrained.pth`.
 ```bash
-python data_generator.py```
+python train.py
+```
 
-**2. Test the Row-Based Transformer model:**
-This script will instantiate the model and run a forward pass with a dummy data tensor to verify its dimensions and functionality.
+**2. Replicate the Evaluation:**
+Run the evaluation script to test the trained model on real-world datasets.
 ```bash
-python architectures/row_transformer.py
+python evaluate.py
 ```
